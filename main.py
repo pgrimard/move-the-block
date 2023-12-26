@@ -6,6 +6,7 @@ import pygame
 
 from board import Board
 from enemy import spawn_enemies, spawn_random_enemy
+from player import Player
 
 logging.basicConfig(level=10, format="%(asctime)s - %(levelname)5s - %(message)s") #, filename="output.log")
 
@@ -37,11 +38,15 @@ xp = 0
 enemies = spawn_enemies(board=board, count=10)
 
 # Timer
-timer = 20
+timer = 2000
 
 # Font setup
 font = pygame.font.Font(None, 30)
 large_font = pygame.font.Font(None, 150)
+
+all_sprites = pygame.sprite.Group()
+player = Player(pos_x=board.width // 2, pos_y=board.height // 2)
+all_sprites.add(player)
 
 clock = pygame.time.Clock()
 
@@ -49,11 +54,10 @@ clock = pygame.time.Clock()
 # Game loop
 running = True
 while running:
-    # Event handling
+    # Quit game event handler
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
 
     if timer > 0:
         milliseconds = clock.tick(board.fps)
@@ -74,41 +78,43 @@ while running:
             pygame.draw.rect(screen, YELLOW, enemy.rect, border_radius=12)
 
         
+        player.handle_events()
 
         # Get the keys pressed
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT] and player_x > 0:
-            player_x -= player_speed
-        if keys[pygame.K_RIGHT] and player_x < board.width - player_size:
-            player_x += player_speed
-        if keys[pygame.K_UP] and player_y > 0:
-            player_y -= player_speed
-        if keys[pygame.K_DOWN] and player_y < board.height - player_size:
-            player_y += player_speed
+        # keys = pygame.key.get_pressed()
+        # if keys[pygame.K_LEFT] and player_x > 0:
+        #     player_x -= player_speed
+        # if keys[pygame.K_RIGHT] and player_x < board.width - player_size:
+        #     player_x += player_speed
+        # if keys[pygame.K_UP] and player_y > 0:
+        #     player_y -= player_speed
+        # if keys[pygame.K_DOWN] and player_y < board.height - player_size:
+        #     player_y += player_speed
 
-        player = pygame.Rect(player_x, player_y, player_size, player_size)
+        # player = pygame.Rect(player_x, player_y, player_size, player_size)
 
-        collision_idx = player.collidelist(enemies)
+        # collision_idx = player.collidelist(enemies)
 
-        if collision_idx >= 0:
-            logging.debug(f"Collided with {collision_idx}")
+        # if collision_idx >= 0:
+        #     logging.debug(f"Collided with {collision_idx}")
 
-            player_colour = RED
-            xp += enemies[collision_idx].xp
+        #     player_colour = RED
+        #     xp += enemies[collision_idx].xp
 
-            del enemies[collision_idx]
+        #     del enemies[collision_idx]
 
-            # Respawn dead enemy
-            enemies.append(spawn_random_enemy(board.width, board.height))
+        #     # Respawn dead enemy
+        #     enemies.append(spawn_random_enemy(board.width, board.height))
                 
-        else:
-            player_colour = GREEN
+        # else:
+        #     player_colour = GREEN
     else:
         text = large_font.render(f"GAME OVER!", True, RED)
         text_rect = text.get_rect(center=(board.width // 2, board.height // 2))
         screen.blit(text, text_rect)
 
-    pygame.draw.rect(screen, player_colour, player)
+    # pygame.draw.rect(screen, player_colour, player)
+    pygame.draw.rect(screen, GREEN, player)
 
     pygame.display.flip()
     
