@@ -16,6 +16,7 @@ class Player(pygame.sprite.Sprite):
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.speed = 7
+        self.stance = "up"
         self.rect = pygame.Rect(pos_x, pos_y, 50, 50)
 
     @handle_key(pygame.K_UP)
@@ -56,7 +57,14 @@ class Player(pygame.sprite.Sprite):
 
     @handle_key(pygame.K_SPACE)
     def handle_space_key(self):
-        logging.debug("Player is shooting primary weapon")
+        if self.stance == "up":
+            logging.debug("Player is shooting up")
+        elif self.stance == "down":
+            logging.debug("Player is shooting down")
+        if self.stance == "left":
+            logging.debug("Player is shooting left")
+        if self.stance == "right":
+            logging.debug("Player is shooting right")
 
     def handle_events(self):
         keys = pygame.key.get_pressed()
