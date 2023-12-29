@@ -1,7 +1,8 @@
-from enum import Enum
 import logging
+from enum import Enum
 
 import pygame
+
 
 def handle_key(key):
     def decorator(func):
@@ -18,49 +19,20 @@ class Stance(Enum):
     RIGHT: str = "RIGHT"
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos_x: int, pos_y: int):
+    def __init__(self, start_x: int, start_y: int):
         super().__init__()
-        self.pos_x = pos_x
-        self.pos_y = pos_y
-        self.speed = 7
-        self.stance = Stance.UP
-        self.rect = pygame.Rect(pos_x, pos_y, 50, 50)
-
-    @handle_key(pygame.K_UP)
-    def move_up(self):
-        logging.debug("Player facing up")
-        self.stance = Stance.UP
-        
-        if self.pos_y > 0:
-            self.pos_y -= self.speed
-            self.rect = pygame.Rect(self.pos_x, self.pos_y, 50, 50)
-
-    @handle_key(pygame.K_DOWN)
-    def move_down(self):
-        logging.debug("Player facing down")
-        self.stance = Stance.DOWN
-
-        if self.pos_y < 600:
-            self.pos_y += self.speed
-            self.rect = pygame.Rect(self.pos_x, self.pos_y, 50, 50)
-
-    @handle_key(pygame.K_LEFT)
-    def move_left(self):
-        logging.debug("Player facing left")
-        self.stance = Stance.LEFT
-
-        if self.pos_x > 0:
-            self.pos_x -= self.speed
-            self.rect = pygame.Rect(self.pos_x, self.pos_y, 50, 50)
-
-    @handle_key(pygame.K_RIGHT)
-    def move_right(self):
-        logging.debug("Player facing right")
-        self.stance = Stance.RIGHT
-
-        if self.pos_x < 800:
-            self.pos_x += self.speed
-            self.rect = pygame.Rect(self.pos_x, self.pos_y, 50, 50)
+        self.images = [
+            pygame.image.load("assets/player.png"),
+            pygame.image.load("assets/player_left_foot.png"),
+            pygame.image.load("assets/player_right_foot.png"),
+        ]
+        self.index = 0
+        self.image = self.images[self.index]
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (start_x, start_y)
+        self.last_update = pygame.time.get_ticks()
+        self.speed = 8
+        self.frame_rate = 100
 
     @handle_key(pygame.K_SPACE)
     def handle_space_key(self):
@@ -73,11 +45,43 @@ class Player(pygame.sprite.Sprite):
         if self.stance == Stance.RIGHT:
             logging.debug("Player is shooting right")
 
-    def handle_events(self):
+    def update(self):
         keys = pygame.key.get_pressed()
 
-        self.move_up(keys)
-        self.move_down(keys)
-        self.move_left(keys)
-        self.move_right(keys)
+        # Animate player if moving
+        if any(keys[key] for key in [pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT]):
+            now = pygame.time.get_ticks()
+            if now - self.last_update > self.frame_rate:
+                self.last_update = now
+                self.index += 1
+                if self.index >= len(self.images):
+                    self.index = 0
+                self.image = self.images[self.index]
+        else:
+            self.image = self.images[0]
+
+        # Move up
+        if keys[pygame.K_UP]:
+            logging.debug("Player facing up")
+            self.stance = Stance.UP
+            self.rect.y -= self.speed if self.rect.y > 0 else 0
+
+        # Move down
+        if keys[pygame.K_DOWN]:
+            logging.debug("Player facing down")
+            self.stance = Stance.DOWN
+            self.rect.y += self.speed if self.rect.y < (600 - self.rect.height) else 0
+
+        # Move left
+        if keys[pygame.K_LEFT]:
+            logging.debug("Player facing left")
+            self.stance = Stance.LEFT
+            self.rect.x -= self.speed if self.rect.x > 0 else 0
+
+        # Move right
+        if keys[pygame.K_RIGHT]:
+            logging.debug("Player facing right")
+            self.stance = Stance.RIGHT
+            self.rect.x += self.speed if self.rect.x < (800 - self.rect.width) else 0
+
         self.handle_space_key(keys)
