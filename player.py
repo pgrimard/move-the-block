@@ -33,6 +33,7 @@ class Player(pygame.sprite.Sprite):
         self.last_update = pygame.time.get_ticks()
         self.speed = 8
         self.frame_rate = 100
+        self.xp = 0
 
     def update(self):
         keys = pygame.key.get_pressed()
